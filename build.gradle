@@ -12,5 +12,6 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile "org.mockito:mockito-all:1.9.5"
     compile "com.googlecode.mp4parser:isoparser:1.0.1"
+    compile fileTree(dir: 'lib', include: ['*.jar'])
 }
 
