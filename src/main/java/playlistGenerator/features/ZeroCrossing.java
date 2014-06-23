@@ -7,7 +7,7 @@ package playlistGenerator.features;
 public class ZeroCrossing extends Feature{
 
     @Override
-    public double[] extractFeature(double[] samples, double sampling_rate) {
+    public double[] extractFeature(double[] samples, double samplingRate) {
         long count = 0;
         for (int samp = 0; samp < samples.length - 1; samp++)
         {

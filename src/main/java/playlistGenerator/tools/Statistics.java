@@ -39,25 +39,25 @@ public class Statistics {
 //    }
 //
 //
-//    /**
-//     * Returns the standard deviation of a set of doubles.
-//     * Returns 0 if there is only one piece of data.
-//     *
-//     * @param	data for which the standard deviation is to be found.
-//     * @return	the standard deviation of the given data.
-//     */
-//    public static double getStandardDeviation(double[] data)
-//    {
-//        if (data.length  < 2)
-//            return 0.0;
-//        double average = getAverage(data);
-//        double sum = 0.0;
-//        for (double aData : data) {
-//            double diff = aData - average;
-//            sum = sum + diff * diff;
-//        }
-//        return Math.sqrt(sum / ((double) (data.length - 1)));
-//    }
+    /**
+     * Returns the standard deviation of a set of doubles.
+     * Returns 0 if there is only one piece of data.
+     *
+     * @param	data for which the standard deviation is to be found.
+     * @return	the standard deviation of the given data.
+     */
+    public static double getStandardDeviation(double[] data)
+    {
+        if (data.length  < 2)
+            return 0.0;
+        double average = getAverage(data);
+        double sum = 0.0;
+        for (double aData : data) {
+            double diff = aData - average;
+            sum = sum + diff * diff;
+        }
+        return Math.sqrt(sum / ((double) (data.length - 1)));
+    }
 //
 //
 //    /**

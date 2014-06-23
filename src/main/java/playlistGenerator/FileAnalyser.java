@@ -7,6 +7,7 @@ import playlistGenerator.tools.Statistics;
 import javax.sound.sampled.AudioInputStream;
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FileAnalyser {
 
@@ -30,17 +31,13 @@ public class FileAnalyser {
         // Calculate the window start positions
         int[] windowStartPositions = calculateWindowStartPositions(samples);
 
+        double[][][] windowFeatureValues = getFeatures(samples, windowStartPositions);
 
+        Map<String, Double> averageVector =  getAverageVector(windowFeatureValues);
 
+        Map<String, Double> normalizedVector = normalizeVector(averageVector);
 
-        double[][][] window_feature_values = getFeatures(samples, windowStartPositions);
-
-        Map<String, Double> mfccAverageVectors =  getMFCCAverageVector(window_feature_values);
-
-
-        System.out.println(mfccAverageVectors);
-
-
+        System.out.println(normalizedVector);
 
     }
 
@@ -67,20 +64,21 @@ public class FileAnalyser {
                 // Case when end of window is larger than the number of samples. i.e reached then end of the file
                 // Pad the end of the window with zeros.
 
-                for (int samp = startSample; samp <= endSample; samp++) {
-                    if (samp < samples.length)
-                        window[samp - startSample] = samples[samp];
+                for (int sample = startSample; sample <= endSample; sample++) {
+                    if (sample < samples.length)
+                        window[sample - startSample] = samples[sample];
                     else
-                        window[samp - startSample] = 0.0;
+                        window[sample - startSample] = 0.0;
                 }
             }
 
+            List<double[]> values = featuresToExtract.stream()
+                    .map(f -> f.extractFeature(window, samplingRate))
+                    .collect(Collectors.toList());
 
-            List<double[]> values = new ArrayList<>();
 
-            featuresToExtract.stream().map(f -> f.extractFeature(window, samplingRate)).forEach(values::add);
-
-            for (int i = 0; i < values.size(); ++i) {
+            for (int i = 0; i < values.size(); i++) {
+                // Loops over list of features extracted values. Adds them to result array.
                 results[win][i] = values.get(i);
             }
         }
@@ -88,46 +86,76 @@ public class FileAnalyser {
         return results;
     }
 
-    private Map<String, Double> getMFCCAverageVector(double[][][] window_feature_values) {
-        // window_feature_values [window int ][feature int ][values]
+    private Map<String, Double> getAverageVector(double[][][] windowFeatureValues) {
+        // windowFeatureValues [window][feature][values]
+
         Map<String, Double> values = new HashMap<>();
 
-        String feautureName;
+        String featureName;
 
         for (int feat = 0; feat < featuresToExtract.size(); feat++) {
 
             double averages;
-            //double stdvs = 0;
+            double stdvs = 0;
 
-            int numberOfWindows = window_feature_values.length - 1;
-            feautureName = featuresToExtract.get(feat).getFeatureName().toLowerCase();
+            int numberOfWindows = windowFeatureValues.length - 1;
+            featureName = featuresToExtract.get(feat).getFeatureName().toLowerCase();
 
-            for (int val = 0; val < window_feature_values[numberOfWindows][feat].length; val++) {
+            for (int val = 0; val < windowFeatureValues[numberOfWindows][feat].length; val++) {
 
                 // Find the values to find the average and standard deviations of
-                double[] values_to_process = new double[window_feature_values.length];
+                double[] valuesToProcess = new double[windowFeatureValues.length];
 
                 int current = 0;
-                for (double[][] window_feature_value : window_feature_values) {
-                    if (window_feature_value[feat] != null) {
-                        values_to_process[current] = window_feature_value[feat][val];
+                for (double[][] windowFeatureValue : windowFeatureValues) {
+                    if (windowFeatureValue[feat] != null) {
+                        valuesToProcess[current] = windowFeatureValue[feat][val];
                         current++;
                     }
                 }
-                // Calculate the averages and standard deviations
-                averages = Statistics.getAverage(values_to_process);
-                // stdvs = Statistics.getStandardDeviation(values_to_process);
+                // Calculate the averages (and standard deviations)
+                averages = Statistics.getAverage(valuesToProcess);
+                 stdvs = Statistics.getStandardDeviation(valuesToProcess);
 
 
                 // Store the results
-                values.put(feautureName + val + "_avg", averages);
-                // values.put(feautureName + val + "_stdvs", stdvs);
+                values.put(featureName + val + "_avg", averages);
+                // values.put(featureName + val + "_stdvs", stdvs);
             }
 
         }
         return values;
 
     }
+
+
+    private Map<String, Double> normalizeVector(Map<String, Double> overallFeatures) {
+        Map<String, Double> result = new HashMap<>();
+
+        double vectorMagnitude = getVectorMagnitude(overallFeatures.values());
+
+        overallFeatures.entrySet()
+                .stream()
+                .forEach(v -> {
+                    double value = v.getValue() / vectorMagnitude;
+                    result.put(v.getKey(), value);
+                });
+
+        //overallFeatures.entrySet().stream().map( x -> x.getValue() / vectorMagnitude);
+
+        return result;
+    }
+
+    private double getVectorMagnitude(Collection<Double> vectorValues) {
+        return vectorValues
+                .stream()
+                .map(v -> Math.pow(v, 2))
+                .reduce(Double::sum)
+                .map(Math::sqrt)
+                .get();
+    }
+
+
 
     private double[] extractSamples(File file) throws Exception {
         // files.stream().map(AudioUtilities::convertM4atoAudioInputStream).forEach();
@@ -149,11 +177,11 @@ public class FileAnalyser {
             currentStartPosition += windowSize - windowOverlapOffset;
         }
 
-        Integer[] windowStartIndicesI = windowStartPositionsList.toArray(new Integer[1]);
-        int[] windowStartPositions = new int[windowStartIndicesI.length];
+        Integer[] windowStartIndices = windowStartPositionsList.toArray(new Integer[1]);
+        int[] windowStartPositions = new int[windowStartIndices.length];
 
         for (int i = 0; i < windowStartPositions.length; i++)
-            windowStartPositions[i] = windowStartIndicesI[i];
+            windowStartPositions[i] = windowStartIndices[i];
 
         return windowStartPositions;
     }

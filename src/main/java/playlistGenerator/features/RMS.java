@@ -7,7 +7,7 @@ package playlistGenerator.features;
 public class RMS extends Feature {
 
     @Override
-    public double[] extractFeature(double[] samples, double sampling_rate) {
+    public double[] extractFeature(double[] samples, double samplingRate) {
         double sum = 0.0;
         for (double sample1 : samples) {
             sum += Math.pow(sample1, 2);
