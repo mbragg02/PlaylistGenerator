@@ -6,6 +6,7 @@ import com.coremedia.iso.boxes.MetaBox;
 import com.coremedia.iso.boxes.MovieBox;
 import com.coremedia.iso.boxes.UserDataBox;
 import com.coremedia.iso.boxes.apple.AppleItemListBox;
+import playlistGenerator.functionalInterfaces.Parser;
 import playlistGenerator.factories.TrackMetaFactory;
 import playlistGenerator.models.TrackMeta;
 

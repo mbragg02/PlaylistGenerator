@@ -1,6 +1,8 @@
 package playlistGenerator.tools;
 
 
+import playlistGenerator.functionalInterfaces.AudioExceptionThrowingFunction;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -11,50 +13,42 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
-public class AudioUtilities {
+public class AudioFunctions {
 
-    /**
-     * Converts a file (m4a) to a AudioInputStream
-     * @param file file to convert. Must be a m4a
-     * @return AudioInputStream
-     */
-    public static AudioInputStream convertM4atoAudioInputStream(File file) {
 
-        AudioInputStream audioInputStream = null;
-        try {
-            audioInputStream = AudioSystem.getAudioInputStream(file);
-        } catch (UnsupportedAudioFileException | IOException e) {
-            e.printStackTrace();
-        }
+    public static AudioInputStream getAudioFileToAudioInputStream(File file, AudioExceptionThrowingFunction function)
+            throws IOException, UnsupportedAudioFileException {
 
-        AudioFormat inputFormat = audioInputStream.getFormat();
+        AudioInputStream audioInputStream = function.apply(file);
 
-        // Create a new PCM_SIGNED audio format
-        AudioFormat decodedFormat = new AudioFormat(
-                AudioFormat.Encoding.PCM_SIGNED,
-                inputFormat.getSampleRate(), inputFormat.getSampleSizeInBits(), inputFormat.getChannels(),
-                inputFormat.getChannels() * 2, inputFormat.getSampleRate(),
-                true);
+        AudioFormat encodedAudioFormat = getAudioFormat(audioInputStream.getFormat());
 
-        // Creates a new Audio input stream of required format
-        return AudioSystem.getAudioInputStream(decodedFormat, audioInputStream);
+        return  AudioSystem.getAudioInputStream(encodedAudioFormat, audioInputStream);
     }
 
+    private static AudioFormat getAudioFormat(AudioFormat audioFormat) {
 
-    private static byte[] getBytesFromAudioInputStream(AudioInputStream audioInputStream) throws Exception {
+        // Create a new PCM_SIGNED audio format
+        return new AudioFormat(
+                AudioFormat.Encoding.PCM_SIGNED,
+                audioFormat.getSampleRate(), audioFormat.getSampleSizeInBits(), audioFormat.getChannels(),
+                audioFormat.getChannels() * 2, audioFormat.getSampleRate(),
+                true);
+    }
+
+    private static byte[] getBytesFromAudioInputStream(AudioInputStream audioInputStream) throws IOException {
 
         // Calculate the buffer size to use
         float bufferDuration = 0.25F;
-        int bufferOverlap    = 2;
+        int bufferOverlap = 2;
 
-        int bufferSize    = getNumberBytesNeeded(bufferDuration, audioInputStream.getFormat());
+        int bufferSize = getNumberBytesNeeded(bufferDuration, audioInputStream.getFormat());
         byte[] byteBuffer = new byte[bufferSize + bufferOverlap];
 
         // Read the bytes into the byteBuffer and then into the ByteArrayOutputStream
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         int position = audioInputStream.read(byteBuffer, 0, byteBuffer.length);
-
 
         // Bottleneck here
         while (position > 0) {
@@ -78,7 +72,7 @@ public class AudioUtilities {
 
     private static int getNumberBytesNeeded(double bufferDuration, AudioFormat audioFormat) {
         int frameSizeInBytes = audioFormat.getFrameSize();
-        float frameRate      = audioFormat.getFrameRate();
+        float frameRate = audioFormat.getFrameRate();
         return (int) (frameSizeInBytes * frameRate * bufferDuration);
     }
 
@@ -92,7 +86,7 @@ public class AudioUtilities {
     }
 
 
-    public static double[] getSamplesInMono (double[][] audioSamples) {
+    public static double[] getSamplesInMono(double[][] audioSamples) {
 
         if (audioSamples.length == 1)
             return audioSamples[0];
@@ -102,8 +96,7 @@ public class AudioUtilities {
 
         double[] samplesInMono = new double[channels];
 
-        for (int sample = 0; sample < channels; sample++)
-        {
+        for (int sample = 0; sample < channels; sample++) {
             double runningSampleTotal = 0.0;
             for (int chan = 0; chan < numberOfSamples; chan++) {
                 runningSampleTotal += audioSamples[chan][sample];
@@ -124,11 +117,10 @@ public class AudioUtilities {
         int bitDepth = format.getSampleSizeInBits();
 
         // Throw exception if incompatible format provided
-        if ( (bitDepth != 16 && bitDepth != 8 )||
+        if ((bitDepth != 16 && bitDepth != 8) ||
                 !format.isBigEndian() ||
-                format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED )
-            throw new Exception( "Only 8 or 16 bit signed PCM samples with a big-endian\n" +
-                    "byte order can be analyzed currently." );
+                format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED)
+            throw new Exception("Only 8 or 16 bit signed PCM samples with a big-byte order can be analyzed");
 
         // Find the number of samples in the audioBytes
         int numberOfBytes = audioBytes.length;
@@ -136,9 +128,9 @@ public class AudioUtilities {
         int numberOfSamples = numberOfBytes / bytesPerSample / numberOfChannels;
 
         // Throw exception if incorrect number of bytes given
-        if ( ((numberOfSamples == 2 || bytesPerSample == 2) && (numberOfBytes % 2 != 0)) ||
-                ((numberOfSamples == 2 && bytesPerSample == 2) && (numberOfBytes % 4 != 0)) )
-            throw new Exception("Uneven number of bytes for given bit depth and number of channels.");
+        if (((numberOfSamples == 2 || bytesPerSample == 2) && (numberOfBytes % 2 != 0)) ||
+                ((numberOfSamples == 2 && bytesPerSample == 2) && (numberOfBytes % 4 != 0)))
+            throw new Exception("Uneven number of bytes for given bit depth and number of channels");
 
         // Find the maximum possible value that a sample may have with the given bit depth
         double maximumSampleValue = findMaximumSampleValue(bitDepth) + 2.0;
@@ -148,13 +140,11 @@ public class AudioUtilities {
 
         // Convert the bytes to double samples
         ByteBuffer byteBuffer = ByteBuffer.wrap(audioBytes);
-        if (bitDepth == 8)
-        {
+        if (bitDepth == 8) {
             for (int sample = 0; sample < numberOfSamples; sample++)
                 for (int chan = 0; chan < numberOfChannels; chan++)
                     samples[chan][sample] = (double) byteBuffer.get() / maximumSampleValue;
-        }
-        else {
+        } else {
             // bitDepth == 16
             ShortBuffer shortBuffer = byteBuffer.asShortBuffer();
             for (int samp = 0; samp < numberOfSamples; samp++)
@@ -163,5 +153,6 @@ public class AudioUtilities {
         }
         return samples;
     }
+
 
 }

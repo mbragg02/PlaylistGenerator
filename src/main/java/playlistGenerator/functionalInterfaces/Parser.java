@@ -1,4 +1,4 @@
-package playlistGenerator.tools;
+package playlistGenerator.functionalInterfaces;
 
 import java.io.File;
 

@@ -1,29 +1,28 @@
-package playlistGenerator;
+package playlistGenerator.controllers;
 
 import playlistGenerator.features.Feature;
-import playlistGenerator.tools.AudioUtilities;
-import playlistGenerator.tools.Statistics;
+import playlistGenerator.tools.AudioFunctions;
 
 import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FileAnalyser {
+public class ExtractionController {
 
     private int windowSize;
     private int windowOverlapOffset;
     private List<Feature> featuresToExtract;
     private double samplingRate;
 
-    public FileAnalyser(int windowSize, double windowOverlap, List<Feature> featuresToExtract) {
+    public ExtractionController(int windowSize, double windowOverlap, List<Feature> featuresToExtract) {
         this.featuresToExtract = featuresToExtract;
         this.windowSize        = windowSize;
         this.windowOverlapOffset = (int) (windowOverlap * (double) windowSize);
     }
 
-    public void extract() throws Exception {
-        File file = new File("/Users/mbragg/IdeaProjects/PlaylistGenerator/music.m4a");
+    public Map<String, Double> extract(File file) throws Exception {
 
         // Extract audio samples from file
         double[] samples = extractSamples(file);
@@ -33,16 +32,19 @@ public class FileAnalyser {
 
         double[][][] windowFeatureValues = getFeatures(samples, windowStartPositions);
 
-        Map<String, Double> averageVector =  getAverageVector(windowFeatureValues);
+        Map<String, Double> averageVector = getAverageVector(windowFeatureValues);
 
-        Map<String, Double> normalizedVector = normalizeVector(averageVector);
-
-        System.out.println(normalizedVector);
-
+        return normalizeVector(averageVector);
     }
 
+    private double[] extractSamples(File file) throws Exception {
 
+        AudioInputStream stream = AudioFunctions.getAudioFileToAudioInputStream(file, AudioSystem::getAudioInputStream);
 
+        samplingRate = stream.getFormat().getSampleRate();
+
+        return AudioFunctions.getSamplesInMono(AudioFunctions.extractSampleValues(stream));
+    }
 
     public double[][][] getFeatures(double[] samples, int[] windowStartPositions) throws Exception {
 
@@ -80,6 +82,7 @@ public class FileAnalyser {
             for (int i = 0; i < values.size(); i++) {
                 // Loops over list of features extracted values. Adds them to result array.
                 results[win][i] = values.get(i);
+
             }
         }
 
@@ -114,8 +117,10 @@ public class FileAnalyser {
                     }
                 }
                 // Calculate the averages (and standard deviations)
-                averages = Statistics.getAverage(valuesToProcess);
-                 stdvs = Statistics.getStandardDeviation(valuesToProcess);
+               // averages = Statistics.getAverage(valuesToProcess);
+                averages = Arrays.stream(valuesToProcess).average().getAsDouble();
+
+                 //stdvs = Statistics.getStandardDeviation(valuesToProcess);
 
 
                 // Store the results
@@ -127,7 +132,6 @@ public class FileAnalyser {
         return values;
 
     }
-
 
     private Map<String, Double> normalizeVector(Map<String, Double> overallFeatures) {
         Map<String, Double> result = new HashMap<>();
@@ -157,16 +161,6 @@ public class FileAnalyser {
 
 
 
-    private double[] extractSamples(File file) throws Exception {
-        // files.stream().map(AudioUtilities::convertM4atoAudioInputStream).forEach();
-
-        AudioInputStream stream = AudioUtilities.convertM4atoAudioInputStream(file);
-
-        samplingRate = stream.getFormat().getSampleRate();
-
-       return AudioUtilities.getSamplesInMono(AudioUtilities.extractSampleValues(stream));
-    }
-
     private int[] calculateWindowStartPositions(double[] samples) {
 
         LinkedList<Integer> windowStartPositionsList = new LinkedList<>();
@@ -185,7 +179,6 @@ public class FileAnalyser {
 
         return windowStartPositions;
     }
-
 
 
 }
