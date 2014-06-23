@@ -7,47 +7,34 @@ package playlistGenerator.models;
  */
 public class Track {
 
-    private TrackMeta trackMeta;
+    private TrackMeta meta;
     private int trackID;
-    private String fileName;
-    private String filePath;
 
-    public Track(int trackID, String fileName, String filePath) {
-        setTrackID(trackID);
-        setFileName(fileName);
-        setFilePath(filePath);
+
+    public Track(int trackID, TrackMeta meta) {
+        setId(trackID);
+        setMeta(meta);
+
     }
 
-    private void setTrackID(int trackID) {
+    private void setId(int trackID) {
         this.trackID = trackID;
     }
 
-    private void setFileName(String filename) {
-        this.fileName = filename;
-    }
 
-    public void setMeta(TrackMeta trackMeta) {
-        this.trackMeta = trackMeta;
-    }
-
-    private void setFilePath(String filePath) {
-        this.filePath = filePath;
+    private void setMeta(TrackMeta trackMeta) {
+        this.meta = trackMeta;
     }
 
 
-    public int getTrackID() {
+
+    public int getId() {
         return trackID;
     }
 
-    public String getFileName() {
-        return fileName;
-    }
 
-    public String getFilePath() {
-        return filePath;
-    }
 
-    public TrackMeta getTrackMeta() {
-        return trackMeta;
+    public TrackMeta getMeta() {
+        return meta;
     }
 }

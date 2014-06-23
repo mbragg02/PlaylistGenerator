@@ -3,7 +3,7 @@ package playlistGenerator.factories;
 import playlistGenerator.models.TrackMeta;
 
 /**
- * Factory to create TrackMeta objects.
+ * Factory to create TrackMeta objects
  *
  * @author Michael Bragg
  */
@@ -22,7 +22,8 @@ public class TrackMetaFactory {
         return instance;
     }
 
-    public TrackMeta getTrackMeta(String artist, String album, String genre, String bpm, String year, String title) {
-        return new TrackMeta(artist, album, genre, bpm, year, title);
+    public TrackMeta getTrackMeta(String filename, String filePath, String artist, String album,
+                                  String genre, String bpm, String year, String title) {
+        return new TrackMeta(filename, filePath, artist, album, genre, bpm, year, title);
     }
 }

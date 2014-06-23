@@ -10,6 +10,7 @@ import playlistGenerator.factories.TrackMetaFactory;
 import playlistGenerator.models.TrackMeta;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -22,7 +23,9 @@ import java.util.Map;
  *
  * @author Michael Bragg
  */
-public class MP4Parser {
+public class MP4Parser implements Parser<TrackMeta> {
+
+
 
     private final static int ATOM_BYTE_OFFSET = 16;
 
@@ -51,9 +54,14 @@ public class MP4Parser {
         metaValues = new HashMap<>();
     }
 
-    public TrackMeta getMeta(String filePath) throws IOException {
+    public TrackMeta parse(File file) {
 
-        IsoFile isoFile = new IsoFile(filePath);
+        IsoFile isoFile = null;
+        try {
+            isoFile = new IsoFile(file.getAbsolutePath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         MovieBox movieBox = isoFile.getBoxes(MovieBox.class).get(0);
         UserDataBox userDataBox = movieBox.getBoxes(UserDataBox.class).get(0);
@@ -73,8 +81,12 @@ public class MP4Parser {
                 parseMeta();
             });
         }
-        isoFile.close();
-        return buildTrackMeta();
+        try {
+            isoFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return buildTrackMeta(file);
     }
 
     private void parseMeta() {
@@ -87,7 +99,7 @@ public class MP4Parser {
         out.reset();
     }
 
-    private TrackMeta buildTrackMeta() {
+    private TrackMeta buildTrackMeta(File file) {
         String album = metaValues.get(ALBUM_CODE);
         String bpm = metaValues.get(BPM_CODE);
         String year = metaValues.get(YEAR_CODE);
@@ -95,6 +107,6 @@ public class MP4Parser {
         String artist = metaValues.containsKey(ARTIST_CODE_1) ? metaValues.get(ARTIST_CODE_1) : metaValues.get(ARTIST_CODE_2);
         String genre = metaValues.containsKey(GENRE_CODE_APPLE) ? metaValues.get(GENRE_CODE_APPLE) : metaValues.get(GENRE_CODE_STANDARD);
 
-        return TrackMetaFactory.getInstance().getTrackMeta(artist, album, genre, bpm, year, title);
+        return TrackMetaFactory.getInstance().getTrackMeta(file.getName(), file.getAbsolutePath(), artist, album, genre, bpm, year, title);
     }
 }

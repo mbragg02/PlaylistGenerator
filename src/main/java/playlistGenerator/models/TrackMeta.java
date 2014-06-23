@@ -6,6 +6,8 @@ package playlistGenerator.models;
  * @author Michael Bragg
  */
 public class TrackMeta {
+    private String filename;
+    private String filePath;
     private String artist;
     private String album;
     private String genre;
@@ -13,13 +15,24 @@ public class TrackMeta {
     private String year;
     private String title;
 
-    public TrackMeta( String artist, String album, String genre, String bpm, String year, String title) {
+    public TrackMeta(String filename, String filePath, String artist, String album,
+                     String genre, String bpm, String year, String title) {
+        this.filename = filename;
+        this.filePath = filePath;
         this.artist = artist;
         this.album = album;
         this.genre = genre;
         this.bpm = bpm;
         this.year = year;
         this.title = title;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public String getFilePath() {
+        return filePath;
     }
 
     public String getArtist() {
