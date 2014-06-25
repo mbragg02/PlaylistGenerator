@@ -1,97 +1,77 @@
 package playlistGenerator.controllers;
 
 import org.jaudiotagger.tag.FieldKey;
-import org.neo4j.cypher.javacompat.ExecutionResult;
-import org.neo4j.helpers.collection.IteratorUtil;
 import playlistGenerator.factories.FeatureFactory;
 import playlistGenerator.factories.TrackFactory;
 import playlistGenerator.factories.TrackMetaFactory;
 import playlistGenerator.features.Feature;
 import playlistGenerator.functionalInterfaces.Parser;
-import playlistGenerator.models.Track;
 import playlistGenerator.models.graphDb;
-import playlistGenerator.tools.JAudioTagger;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class ScanController {
-
-    private static final int WINDOW_SIZE = 512;
-    private static final double WINDOW_OVERLAP = 0.0;
 
     public final static String musicPath = "/Users/mbragg/Music/iTunes/iTunes Media/Music";
     public static final String M4A = ".m4a";
     private List<File> files;
     private List<Feature> features;
     private List<FieldKey> tagKeys;
-    private int trackIDs;
     private TrackFactory trackFactory;
     private graphDb db;
     private final ExtractionController extractionController;
-    private final Parser jAudioTagger;
+    private final Parser tagsController;
+    private final PlaylistController playlistController;
 
     public ScanController() throws IOException {
         files  = new ArrayList<>();
         db = new graphDb();
-        trackIDs = 0;
+
         features = FeatureFactory.getInstance().getFeatureList();
         trackFactory = TrackFactory.getInstance();
         tagKeys = TrackMetaFactory.getInstance().getFieldKeys();
 
+        extractionController = new ExtractionController(features);
+        tagsController       = new TagsController(tagKeys);
+        playlistController   = new PlaylistController();
 
-        extractionController = new ExtractionController(WINDOW_SIZE, WINDOW_OVERLAP, features);
-        jAudioTagger = new JAudioTagger(tagKeys);
+
+
     }
 
-    public void launch() throws Exception {
-        scan();
-        buildTrack();
+    public void query() throws IOException {
 
-//        query();
-        db.shutDown();
-    }
-
-    private void query() {
-
-        String filename = "01 Saltwater.m4a";
+        String filename = "01 It's On!.m4a";
 
         System.out.println("Query: " + filename);
 
-        System.out.println("=========================");
-        ExecutionResult result = db.getNearest(filename, 5);
+        System.out.println("===================================");
+        List<String> playlist = db.getNearest(filename, 10);
 
-        Iterator<String> t = result.columnAs("Neighbor");
-
-
-        for (String s : IteratorUtil.asIterable(t))
-        {
-            System.out.println(s);
-
-        }
+        playlistController.create(playlist);
+        db.shutDown();
     }
 
 
 
-    private void buildTrack() throws Exception {
-
+    private void buildTracks() throws Exception {
+        System.out.println("Total files in library: " + files.size());
+        int counter = 0;
         for(File file : files) {
             if(!db.containsFileName(file.getName())) {
-
-                // debug
-                System.out.println(file.getName());
-
-                Track track = trackFactory.buildTrack(jAudioTagger, extractionController, ++trackIDs, file);
-                db.addNode(track);
+                System.out.println("[" + counter + " of " + files.size() + "] " + file.getName());
+                db.addNode(trackFactory.buildTrack(tagsController, extractionController, file));
             }
+            counter++;
         }
+        db.shutDown();
     }
 
-    private void scan() {
+    public void scan() throws Exception {
 //        File file = new File("/Users/mbragg/IdeaProjects/PlaylistGenerator/music.m4a");
 //        files.add(file);
 
@@ -103,6 +83,7 @@ public class ScanController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        buildTracks();
     }
 
 

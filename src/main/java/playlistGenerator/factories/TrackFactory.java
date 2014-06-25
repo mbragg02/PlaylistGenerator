@@ -24,11 +24,11 @@ public class TrackFactory {
     }
 
 
-   public Track buildTrack(Parser tagger, ExtractionController analyser, int trackId, File file) throws Exception {
+   public Track buildTrack(Parser tagger, ExtractionController analyser, File file) throws Exception {
 
        Map<String, String> tags = tagger.parse(file);
        double[] featureVector = analyser.extract(file);
 
-       return new Track(trackId, file.getName(), file.getAbsolutePath(), tags, featureVector);
+       return new Track(file.getName(), file.getAbsolutePath(), tags, featureVector);
    }
 }

@@ -10,24 +10,20 @@ import java.util.Map;
  */
 public class Track {
 
-    private int trackID;
-    private double[] featureVector;
-    private double featureVectorLength;
     private String filename;
-    private String filepath;
+    private String filePath;
     private Map<String, String> tags;
 
-    public Track(int trackID, String filename, String filepath, Map<String, String> tags, double[] featureVector) {
-        setId(trackID);
+    private double[] featureVector;
+    private double featureVectorLength;
+
+    public Track(String filename, String filePath, Map<String, String> tags, double[] featureVector) {
         setFeatureVector(featureVector);
         setTrackTags(tags);
         setFilename(filename);
-        setFilepath(filepath);
+        setFilePath(filePath);
     }
 
-    public int getId() {
-        return trackID;
-    }
 
     public Map<String, String> getTags() {
         return tags;
@@ -54,20 +50,16 @@ public class Track {
         this.filename = filename;
     }
 
-    public String getFilepath() {
-        return filepath;
+    public String getFilePath() {
+        return filePath;
     }
 
-    private void setFilepath(String filepath) {
-        this.filepath = filepath;
+    private void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     private void setTrackTags(Map<String, String> tags) {
         this.tags = tags;
-    }
-
-    private void setId(int trackID) {
-        this.trackID = trackID;
     }
 
     private void setFeatureVectorLength(double length) {
@@ -75,7 +67,6 @@ public class Track {
     }
 
     private double getVectorMagnitude(double[] vectorValues) {
-
         double res = Arrays.stream(vectorValues)
                 .map(v -> Math.pow(v, 2))
                 .reduce(Double::sum)

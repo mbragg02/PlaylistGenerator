@@ -1,4 +1,4 @@
-package playlistGenerator.tools;
+package playlistGenerator.controllers;
 
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -16,13 +16,18 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class JAudioTagger implements Parser {
+public class TagsController implements Parser {
 
     private final Map<String, String> tags;
     private final List<FieldKey> tagKeys;
 
-    public JAudioTagger(List<FieldKey> tagKeys) {
+    public TagsController(List<FieldKey> tagKeys) {
+
+        Logger.getLogger("org.jaudiotagger").setLevel(Level.WARNING);
+
         this.tags = new HashMap<>();
         this.tagKeys = tagKeys;
     }
