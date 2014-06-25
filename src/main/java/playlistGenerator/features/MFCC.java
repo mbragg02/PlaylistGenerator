@@ -19,7 +19,6 @@ public class MFCC extends Feature {
     public double[] extractFeature(double[] samples, double sampling_rate) {
 
         double[] magnitudeSpectrum       = fe.magnitudeSpectrum(samples);
-        //double[] magnitudeSpectrum       = fft.getMagnitudeSpectrum();
         int[] binIndices                 = fe.fftBinIndices(sampling_rate, magnitudeSpectrum.length);
         double[] fbank                   = fe.melFilter(magnitudeSpectrum, binIndices);
         double[] nonLinearTransformation = fe.nonLinearTransformation(fbank);

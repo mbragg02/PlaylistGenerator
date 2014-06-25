@@ -1,6 +1,9 @@
 package playlistGenerator.factories;
 
-import playlistGenerator.models.TrackMeta;
+import org.jaudiotagger.tag.FieldKey;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Factory to create TrackMeta objects
@@ -22,8 +25,23 @@ public class TrackMetaFactory {
         return instance;
     }
 
-    public TrackMeta getTrackMeta(String filename, String filePath, String artist, String album,
-                                  String genre, String bpm, String year, String title) {
-        return new TrackMeta(filename, filePath, artist, album, genre, bpm, year, title);
+    public List<FieldKey> getFieldKeys() {
+        FieldKey title = FieldKey.TITLE;
+        FieldKey artist = FieldKey.ARTIST;
+        FieldKey album = FieldKey.ALBUM;
+        FieldKey genre = FieldKey.GENRE;
+        FieldKey year = FieldKey.YEAR;
+
+        List<FieldKey> fieldKeys = new ArrayList<>();
+        fieldKeys.add(title);
+        fieldKeys.add(artist);
+        fieldKeys.add(album);
+        fieldKeys.add(genre);
+        fieldKeys.add(year);
+
+        return fieldKeys;
+
     }
 }
+
+

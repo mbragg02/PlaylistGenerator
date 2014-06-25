@@ -22,7 +22,7 @@ public class ExtractionController {
         this.windowOverlapOffset = (int) (windowOverlap * (double) windowSize);
     }
 
-    public Map<String, Double> extract(File file) throws Exception {
+    public double[] extract(File file) throws Exception {
 
         // Extract audio samples from file
         double[] samples = extractSamples(file);
@@ -32,9 +32,8 @@ public class ExtractionController {
 
         double[][][] windowFeatureValues = getFeatures(samples, windowStartPositions);
 
-        Map<String, Double> averageVector = getAverageVector(windowFeatureValues);
+        return getAverageVector(windowFeatureValues);
 
-        return normalizeVector(averageVector);
     }
 
     private double[] extractSamples(File file) throws Exception {
@@ -89,10 +88,11 @@ public class ExtractionController {
         return results;
     }
 
-    private Map<String, Double> getAverageVector(double[][][] windowFeatureValues) {
+    private double[] getAverageVector(double[][][] windowFeatureValues) {
         // windowFeatureValues [window][feature][values]
 
         Map<String, Double> values = new HashMap<>();
+        double[] result = new double[0];
 
         String featureName;
 
@@ -104,7 +104,11 @@ public class ExtractionController {
             int numberOfWindows = windowFeatureValues.length - 1;
             featureName = featuresToExtract.get(feat).getFeatureName().toLowerCase();
 
-            for (int val = 0; val < windowFeatureValues[numberOfWindows][feat].length; val++) {
+            result = new double[windowFeatureValues[numberOfWindows][feat].length];
+
+
+            // change val to 1 to avoid low frequency bias
+            for (int val = 1; val < windowFeatureValues[numberOfWindows][feat].length; val++) {
 
                 // Find the values to find the average and standard deviations of
                 double[] valuesToProcess = new double[windowFeatureValues.length];
@@ -122,42 +126,38 @@ public class ExtractionController {
 
                  //stdvs = Statistics.getStandardDeviation(valuesToProcess);
 
-
                 // Store the results
                 values.put(featureName + val + "_avg", averages);
+                result[val] = averages;
                 // values.put(featureName + val + "_stdvs", stdvs);
             }
 
         }
-        return values;
-
-    }
-
-    private Map<String, Double> normalizeVector(Map<String, Double> overallFeatures) {
-        Map<String, Double> result = new HashMap<>();
-
-        double vectorMagnitude = getVectorMagnitude(overallFeatures.values());
-
-        overallFeatures.entrySet()
-                .stream()
-                .forEach(v -> {
-                    double value = v.getValue() / vectorMagnitude;
-                    result.put(v.getKey(), value);
-                });
-
-        //overallFeatures.entrySet().stream().map( x -> x.getValue() / vectorMagnitude);
-
+        //return values;
         return result;
+
     }
 
-    private double getVectorMagnitude(Collection<Double> vectorValues) {
-        return vectorValues
-                .stream()
-                .map(v -> Math.pow(v, 2))
-                .reduce(Double::sum)
-                .map(Math::sqrt)
-                .get();
-    }
+
+
+//    private Map<String, Double> normalizeFeatureVector(Map<String, Double> overallFeatures) {
+//        Map<String, Double> result = new HashMap<>();
+//
+//        double vectorMagnitude = getVectorMagnitude(overallFeatures.values());
+//
+//        overallFeatures.entrySet()
+//                .stream()
+//                .forEach(v -> {
+//                    double value = v.getValue() / vectorMagnitude;
+//                    result.put(v.getKey(), value);
+//                });
+//
+//        //overallFeatures.entrySet().stream().map( x -> x.getValue() / vectorMagnitude);
+//
+//        return result;
+//    }
+
+
 
 
 

@@ -2,6 +2,7 @@
 /build/
 /bin/
 target/
+src/main/resources/neo4j-test-db
 
 # OS Files #
 .DS_Store

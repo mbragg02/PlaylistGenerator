@@ -26,6 +26,8 @@ public class FeatureFactory {
 
         List<Feature> features = new ArrayList<>();
         features.add(getMFCC());
+        //features.add(new RMS());
+        //features.add(new ZeroCrossing());
         return features;
     }
 

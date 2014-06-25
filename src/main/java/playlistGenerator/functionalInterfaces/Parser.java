@@ -1,9 +1,9 @@
 package playlistGenerator.functionalInterfaces;
 
 import java.io.File;
+import java.util.Map;
 
-@FunctionalInterface
-public interface Parser<T> {
+public interface Parser {
 
-    T parse(File file);
+    Map<String, String> parse(File file) throws Exception;
 }
