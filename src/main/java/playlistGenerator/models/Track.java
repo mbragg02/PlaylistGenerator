@@ -76,10 +76,10 @@ public class Track {
     }
 
 
-
-    private double[] normalzeFeatureArray(double[] featureArray) {
-        double unNormalizedLength = getVectorMagnitude(featureArray);
-        return Arrays.stream(featureArray).map(d -> d / unNormalizedLength).toArray();
-    }
+//
+//    private double[] normalzeFeatureArray(double[] featureArray) {
+//        double unNormalizedLength = getVectorMagnitude(featureArray);
+//        return Arrays.stream(featureArray).map(d -> d / unNormalizedLength).toArray();
+//    }
 
 }

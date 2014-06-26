@@ -13,16 +13,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class genreJSON {
+public class genreJSONParser {
 
-    public Map<String, List<String>> parse() {
+    private JSONParser parser;
+    private Map<String, List<String>> allGenres;
 
-        JSONParser parser = new JSONParser();
-        Map<String, List<String>> allGenres = new HashMap<>();
+    public genreJSONParser() {
+        parser = new JSONParser();
+        allGenres = new HashMap<>();
+    }
+
+    public Map<String, List<String>> parse(String filename) {
 
         try {
 
-            URL genresURL = getClass().getResource("genres.json");
+            URL genresURL = getClass().getResource(filename);
 
             Object obj = parser.parse(new FileReader(genresURL.getFile()));
             JSONObject genres = (JSONObject) obj;

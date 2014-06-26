@@ -1,15 +1,15 @@
 package playlistGenerator.controllers;
 
 import playlistGenerator.features.Feature;
-import playlistGenerator.tools.AudioFunctions;
 
 import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
-public class ExtractionController {
+public class FeatureExtractionController {
 
     private int windowOverlapOffset;
     private List<Feature> featuresToExtract;
@@ -17,33 +17,32 @@ public class ExtractionController {
     private static final int WINDOW_SIZE = 512;
     private static final double WINDOW_OVERLAP = 0.0;
 
-    public ExtractionController(List<Feature> featuresToExtract) {
+    private double[] samples;
+    private int[] windowStartPositions;
+
+    public FeatureExtractionController(List<Feature> featuresToExtract) {
         this.featuresToExtract = featuresToExtract;
         this.windowOverlapOffset = (int) (WINDOW_OVERLAP * (double) WINDOW_SIZE);
     }
 
     public double[] extract(File file) throws Exception {
-
-        double[] samples = extractSamples(file);
-
-        int[] windowStartPositions = calculateWindowStartPositions(samples);
-
-        double[][][] windowFeatureValues = getFeatures(samples, windowStartPositions);
-
-        return getAverageVector(windowFeatureValues);
-
+        extractSamples(file);
+        calculateWindowStartPositions();
+        return getAverageVector(getFeatures());
     }
 
-    private double[] extractSamples(File file) throws Exception {
+    private void extractSamples(File file) throws Exception {
 
-        AudioInputStream stream = AudioFunctions.getAudioFileToAudioInputStream(file, AudioSystem::getAudioInputStream);
+        AudioStreamController streamFormatter   = new AudioStreamController(file);
+        AudioSampleController sampleController  = new AudioSampleController();
 
-        samplingRate = stream.getFormat().getSampleRate();
+        AudioInputStream formattedAudioInputStream = streamFormatter.setAudioInputStream();
 
-        return AudioFunctions.getSamplesInMono(AudioFunctions.extractSampleValues(stream));
+        samplingRate = streamFormatter.getSampleRate();
+        samples = sampleController.getSamplesInMono(formattedAudioInputStream);
     }
 
-    public double[][][] getFeatures(double[] samples, int[] windowStartPositions) throws Exception {
+    private double[][][] getFeatures() throws Exception {
 
         double[][][] results = new double[windowStartPositions.length][featuresToExtract.size()][];
 
@@ -58,8 +57,7 @@ public class ExtractionController {
             // Get the samples for the current window
             if (endSample < samples.length) {
                 System.arraycopy(samples, startSample, window, 0, endSample + 1 - startSample);
-            }
-            else {
+            } else {
                 // Case when end of window is larger than the number of samples. i.e reached then end of the file
                 // Pad the end of the window with zeros.
                 for (int sample = startSample; sample <= endSample; sample++) {
@@ -113,7 +111,7 @@ public class ExtractionController {
         return result;
     }
 
-    private int[] calculateWindowStartPositions(double[] samples) {
+    private void calculateWindowStartPositions() {
 
         LinkedList<Integer> windowStartPositionsList = new LinkedList<>();
 
@@ -129,26 +127,6 @@ public class ExtractionController {
         for (int i = 0; i < windowStartPositions.length; i++)
             windowStartPositions[i] = windowStartIndices[i];
 
-        return windowStartPositions;
+        this.windowStartPositions = windowStartPositions;
     }
-
-
-//    private Map<String, Double> normalizeFeatureVector(Map<String, Double> overallFeatures) {
-//        Map<String, Double> result = new HashMap<>();
-//
-//        double vectorMagnitude = getVectorMagnitude(overallFeatures.values());
-//
-//        overallFeatures.entrySet()
-//                .stream()
-//                .forEach(v -> {
-//                    double value = v.getValue() / vectorMagnitude;
-//                    result.put(v.getKey(), value);
-//                });
-//
-//        //overallFeatures.entrySet().stream().map( x -> x.getValue() / vectorMagnitude);
-//
-//        return result;
-//    }
-
-
 }

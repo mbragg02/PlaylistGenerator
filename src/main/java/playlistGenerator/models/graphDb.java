@@ -8,7 +8,7 @@ import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
-import playlistGenerator.tools.genreJSON;
+import playlistGenerator.tools.genreJSONParser;
 
 import java.io.File;
 import java.util.*;
@@ -28,7 +28,7 @@ public class graphDb {
     }
 
     public graphDb() {
-        genres = new genreJSON().parse();
+        genres = new genreJSONParser().parse("genres.json");
         label = () -> "Track";
         initialize();
     }

@@ -19,12 +19,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class TagsController implements Parser {
+public class MetaExtractionController implements Parser {
 
     private final Map<String, String> tags;
     private final List<FieldKey> tagKeys;
 
-    public TagsController(List<FieldKey> tagKeys) {
+    public MetaExtractionController(List<FieldKey> tagKeys) {
 
         Logger.getLogger("org.jaudiotagger").setLevel(Level.WARNING);
 

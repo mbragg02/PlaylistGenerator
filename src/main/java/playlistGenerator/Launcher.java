@@ -1,20 +1,19 @@
 package playlistGenerator;
 
-import playlistGenerator.controllers.ScanController;
-import playlistGenerator.tools.genreJSON;
-
-import java.util.List;
-import java.util.Map;
+import playlistGenerator.controllers.FileScanController;
 
 public class Launcher {
 
     public static void main(String[] args) throws Exception {
-        ScanController scanController = new ScanController();
+        FileScanController fileScanController = new FileScanController();
 
-//        scanController.scan();
-       //scanController.query();
-        genreJSON p = new genreJSON();
-        Map<String, List<String>> res =  p.parse();
+        fileScanController.scan();
+//       scanController.query();
+
+
+
+//        genreJSON p = new genreJSON();
+//        Map<String, List<String>> res =  p.parse();
 
         //System.out.println(res);
     }

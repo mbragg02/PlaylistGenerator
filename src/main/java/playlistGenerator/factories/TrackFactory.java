@@ -1,7 +1,7 @@
 package playlistGenerator.factories;
 
 
-import playlistGenerator.controllers.ExtractionController;
+import playlistGenerator.controllers.FeatureExtractionController;
 import playlistGenerator.functionalInterfaces.Parser;
 import playlistGenerator.models.Track;
 
@@ -24,10 +24,10 @@ public class TrackFactory {
     }
 
 
-   public Track buildTrack(Parser tagger, ExtractionController analyser, File file) throws Exception {
+   public Track buildTrack(Parser tagger, FeatureExtractionController featureExtraction, File file) throws Exception {
 
        Map<String, String> tags = tagger.parse(file);
-       double[] featureVector = analyser.extract(file);
+       double[] featureVector = featureExtraction.extract(file);
 
        return new Track(file.getName(), file.getAbsolutePath(), tags, featureVector);
    }
